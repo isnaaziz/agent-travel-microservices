@@ -1,0 +1,9 @@
+target/
+*.log
+*.log.*
+.idea/
+.settings/
+.classpath
+.project
+stop-all.sh
+*.iml
