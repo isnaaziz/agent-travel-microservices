@@ -17,5 +17,5 @@ RUN mvn clean package -pl payment-service -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 VOLUME /tmp
 WORKDIR /app
-COPY --from=builder /app/payment-service/target/*.jar app.jar
+COPY --from=builder /app/payment-service/target/*.jar /app.jar
 ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "/app.jar"]

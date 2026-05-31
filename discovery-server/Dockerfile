@@ -17,5 +17,5 @@ RUN mvn clean package -pl discovery-server -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 VOLUME /tmp
 WORKDIR /app
-COPY --from=builder /app/discovery-server/target/*.jar app.jar
+COPY --from=builder /app/discovery-server/target/*.jar /app.jar
 ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "/app.jar"]
