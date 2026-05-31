@@ -18,4 +18,4 @@ FROM eclipse-temurin:21-jre-alpine
 VOLUME /tmp
 WORKDIR /app
 COPY --from=builder /app/config-server/target/*.jar /app.jar
-ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=native,docker", "-jar", "/app.jar"]
