@@ -1,0 +1,13 @@
+# Multi-stage GraalVM Native Image Build
+FROM ghcr.io/graalvm/native-image-community:21-ol9 AS builder
+WORKDIR /app
+COPY . .
+# Compile to a native binary using Spring Boot 3 AOT
+RUN ./mvnw -Pnative native:compile -DskipTests
+
+# Run in an extremely small, JRE-free bare-metal image
+FROM alpine:3.18
+RUN apk --no-cache add gcompat
+WORKDIR /app
+COPY --from=builder /app/target/discovery-server /app/discovery-server
+ENTRYPOINT ["/app/discovery-server", "-Dspring.profiles.active=docker"]

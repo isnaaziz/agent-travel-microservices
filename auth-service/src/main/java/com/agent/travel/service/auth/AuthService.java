@@ -12,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +25,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final GoogleAuthClient googleAuthClient;
 
     @Transactional
     public AuthResponse signup(SignUpRequest request) {
@@ -93,11 +92,9 @@ public class AuthService {
             name = parts.length > 3 ? parts[3].replace("-", " ") : "Google Traveler";
             email = parts.length > 4 ? parts[4] : "traveler@gmail.com";
         } else {
-            log.info("Verifying Google ID token via Google Tokeninfo API...");
+            log.info("Verifying Google ID token via Google Tokeninfo API (with Circuit Breaker)...");
             try {
-                String googleTokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" + request.getIdToken();
-                @SuppressWarnings("unchecked")
-                Map<String, Object> tokenInfo = restTemplate.getForObject(googleTokenInfoUrl, Map.class);
+                Map<String, Object> tokenInfo = googleAuthClient.verifyToken(request.getIdToken());
 
                 if (tokenInfo == null || tokenInfo.containsKey("error_description")) {
                     throw new IllegalArgumentException("Invalid Google ID Token!");

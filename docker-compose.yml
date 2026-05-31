@@ -1,0 +1,102 @@
+services:
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: travel-zipkin
+    ports:
+      - "9411:9411"
+    restart: always
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    container_name: travel-discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - zipkin
+
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: travel-config-server
+    ports:
+      - "8889:8889"
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - discovery-server
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: travel-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8889
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - config-server
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+    container_name: travel-booking-service
+    ports:
+      - "8082:8082"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8889
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - config-server
+
+  destination-service:
+    build:
+      context: .
+      dockerfile: destination-service/Dockerfile
+    container_name: travel-destination-service
+    ports:
+      - "8083:8083"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8889
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - config-server
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    container_name: travel-payment-service
+    ports:
+      - "8084:8084"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8889
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - config-server
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: travel-api-gateway
+    ports:
+      - "8888:8888"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:8889
+      - EUREKA_SERVER_URL=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    depends_on:
+      - config-server

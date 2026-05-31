@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -29,7 +27,7 @@ public class PaymentService {
 
     private final BookingRepository bookingRepository;
     private final BookingService bookingService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final MidtransClient midtransClient;
 
     @Value("${midtrans.server-key}")
     private String serverKey;
@@ -99,11 +97,7 @@ public class PaymentService {
 
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
             
-            @SuppressWarnings("rawtypes")
-            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(snapUrl, requestEntity, Map.class);
-            
-            @SuppressWarnings("unchecked")
-            Map<String, Object> responseBody = responseEntity.getBody();
+            Map<String, Object> responseBody = midtransClient.postTransaction(snapUrl, requestEntity);
 
             if (responseBody == null || !responseBody.containsKey("token")) {
                 throw new IllegalStateException("Failed to retrieve token from Midtrans Snap API");

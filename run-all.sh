@@ -14,6 +14,12 @@ EUREKA_PID=$!
 echo "Waiting 12 seconds for Discovery Server to boot up..."
 sleep 12
 
+echo "1b. Starting Config Server on port 8889..."
+$MVNW_PATH spring-boot:run -pl config-server > config-server.log 2>&1 &
+CONFIG_PID=$!
+echo "Waiting 8 seconds for Config Server to boot up..."
+sleep 8
+
 echo "2. Starting Auth Service on port 8081..."
 $MVNW_PATH spring-boot:run -pl auth-service > auth-service.log 2>&1 &
 AUTH_PID=$!
@@ -39,12 +45,13 @@ echo "All microservices are starting up in the background!"
 echo "Log files created: *.log (e.g., tail -f auth-service.log)"
 echo "Eureka Dashboard: http://localhost:8761"
 echo "API Gateway endpoint: http://localhost:8888"
+echo "Config Server endpoint: http://localhost:8889"
 echo "--------------------------------------------------"
 echo "To stop all services, you can run: ./stop-all.sh"
 
 # Write stop script
 echo "#!/bin/bash" > stop-all.sh
 echo "echo 'Stopping all microservices...'" >> stop-all.sh
-echo "kill $EUREKA_PID $GATEWAY_PID $AUTH_PID $DEST_PID $BOOKING_PID $PAYMENT_PID 2>/dev/null" >> stop-all.sh
+echo "kill $EUREKA_PID $CONFIG_PID $GATEWAY_PID $AUTH_PID $DEST_PID $BOOKING_PID $PAYMENT_PID 2>/dev/null" >> stop-all.sh
 echo "echo 'Microservices stopped successfully.'" >> stop-all.sh
 chmod +x stop-all.sh
