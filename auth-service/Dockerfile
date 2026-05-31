@@ -2,8 +2,14 @@
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 COPY pom.xml .
+COPY discovery-server/pom.xml discovery-server/
+COPY config-server/pom.xml config-server/
+COPY api-gateway/pom.xml api-gateway/
 COPY auth-service/pom.xml auth-service/
-RUN mvn dependency:go-offline -B -pl auth-service || true
+COPY destination-service/pom.xml destination-service/
+COPY booking-service/pom.xml booking-service/
+COPY payment-service/pom.xml payment-service/
+
 COPY auth-service/src auth-service/src
 RUN mvn clean package -pl auth-service -DskipTests
 
